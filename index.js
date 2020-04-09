@@ -90,11 +90,8 @@ Notifications.configure = function(options: Object) {
 
 	if ( this.hasPoppedInitialNotification === false &&
 			( options.popInitialNotification === undefined || options.popInitialNotification === true ) ) {
-		this.popInitialNotification(function(firstNotification) {
-			if ( firstNotification !== null ) {
-				this._onNotification(firstNotification, true);
-			}
-		}.bind(this));
+		this.popInitialNotification = this.popInitialNotification.bind(this);
+		this.popInitialNotification();
 		this.hasPoppedInitialNotification = true;
 	}
 
@@ -310,8 +307,12 @@ Notifications.getApplicationIconBadgeNumber = function() {
 
 Notifications.popInitialNotification = function(handler) {
 	this.callNative('getInitialNotification').then(function(result){
-		handler(result);
-	});
+		if (handler) {
+			handler(result);
+		} else if ( result !== null ) {
+				this._onNotification(result, true);
+		}
+	}.bind(this));
 };
 
 Notifications.abandonPermissions = function() {
